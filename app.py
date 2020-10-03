@@ -85,6 +85,8 @@ app.layout = dbc.Container([
         ],
         align="center",
     ),
+    html.Div([dbc.Alert("This is a primary alert", color="primary")],
+             style={'display': 'block'})
 ],
 )
 
