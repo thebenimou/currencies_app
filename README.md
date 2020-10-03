@@ -1,1 +1,5 @@
-# currencies_app
+
+# Predict Currencies rate change 
+
+This is the MVP.
+
