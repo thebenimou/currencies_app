@@ -11,6 +11,8 @@ import dash_bootstrap_components as dbc
 # app = dash.Dash(__name__)
 app = dash.Dash(external_stylesheets=[dbc.themes.FLATLY])
 
+server = app.server
+
 # get data
 
 url = "https://api.exchangeratesapi.io/history?start_at=1999-01-01&end_at=2020-12-02&base=USD"
