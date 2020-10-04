@@ -53,7 +53,7 @@ form = dbc.Row(
                     ),
                 ]
             ),
-            width=4,
+            lg=4, sm=12
         ),
         dbc.Col(
             dbc.FormGroup(
@@ -70,7 +70,8 @@ form = dbc.Row(
                     ),
                 ]
             ),
-            width=8,
+            lg=8, sm=12
+
         ),
     ],
 )
@@ -85,25 +86,29 @@ app.layout = dbc.Container([
         ],
         align="center",
     ),
-    html.Div([dbc.Alert("This is a primary alert", color="primary")],
-             style={'display': 'block'})
+    html.Div([dbc.Alert("Please select at least one currency", color="primary")],
+             style={'display': 'none'}, id="output")
 ],
+    # fluid=True
 )
 
 
 @app.callback(
-    Output('graph-with-control', 'figure'),
+    [Output('graph-with-control', 'figure'),
+     Output(component_id='output', component_property='style')],
     [Input('currency-control', 'value'), Input('year-control', 'value')])
 def update_figure(selected_currency, year_range):
+    display_alert = "none"
     if type(selected_currency) != type([]):
         selected_currency = [selected_currency]
     if selected_currency == []:
         selected_currency = ["EUR"]
+        display_alert = "block"
     filtered_df = df[(df.currency.isin(selected_currency))
                      & (df.year >= year_range[0]) & (df.year <= year_range[1])]
     fig = px.line(filtered_df, x="date", y="value", color='currency')
     fig.update_layout(transition_duration=500)
-    return fig
+    return fig, {'display': display_alert}
 
 
 if __name__ == '__main__':
