@@ -112,4 +112,4 @@ def update_figure(selected_currency, year_range):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False, port=5000)
