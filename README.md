@@ -1,7 +1,7 @@
 
 # Predict Currencies rate change 
 
-This is the MVP.
+Preview : https://currency-dash-app.herokuapp.com/
 
 ## Running the app locally
 
@@ -35,7 +35,4 @@ python app.py
 
 ```
 
-# View in live 
-
-https://currency-dash-app.herokuapp.com/
 
