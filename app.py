@@ -78,18 +78,22 @@ form = dbc.Row(
     ],
 )
 
+
 app.layout = dbc.Container([
     html.H1("Currency App"),
     html.Hr(),
     form,
     dbc.Row(
         [
-            dbc.Col(dcc.Graph(id='graph-with-control')),
+            dbc.Col(dcc.Graph(id='graph-with-control',
+                              config={
+                                  'displayModeBar': False
+                              })),
         ],
         align="center",
     ),
     html.Div([dbc.Alert("Please select at least one currency", color="primary")],
-             style={'display': 'none'}, id="output")
+             style={'display': 'none'}, id="output"),
 ],
     # fluid=True
 )
@@ -108,10 +112,12 @@ def update_figure(selected_currency, year_range):
         display_alert = "block"
     filtered_df = df[(df.currency.isin(selected_currency))
                      & (df.year >= year_range[0]) & (df.year <= year_range[1])]
-    fig = px.line(filtered_df, x="date", y="value", color='currency')
+    fig = px.line(filtered_df, x="date", y="value", color='currency',
+                  template="simple_white",
+                  )
     fig.update_layout(transition_duration=500)
     return fig, {'display': display_alert}
 
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
