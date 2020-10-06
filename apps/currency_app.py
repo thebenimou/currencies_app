@@ -1,43 +1,14 @@
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
-
+import dash_bootstrap_components as dbc
 from app import app
-
-
 import requests
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
 import plotly.express as px
 import pandas as pd
-from dash.dependencies import Input, Output
-import dash_bootstrap_components as dbc
-
-
-url = "https://api.exchangeratesapi.io/history?start_at=1999-01-01&end_at=2020-12-02&base=USD"
-resp = requests.get(url)
-dico = resp.json()
-df = pd.DataFrame.from_records(dico['rates']).transpose()
-df['date'] = df.index
-df['date'] = pd.to_datetime(df['date'])
-df = df.melt(id_vars=df.columns[-1])
-df.rename(columns={"variable": "currency"}, inplace=True)
-df['year'] = df['date'].apply(lambda x: x.year)
-
-transco = pd.read_csv("transco.csv", sep=";")
-transco.index = transco["abbr"]
-transco_dic = transco.to_dict()['label']
-
-# on filtre que là où la transco est dispo
-df = df[df.currency.isin(list(transco_dic.keys()))]
-
-selected_currency = ["CAD"]
-# fig = px.line(df[[selected_currency, "date"]],
-#               x="date", y="CAD", title='CAD for 1 USD')
-filtered_df = df[df.currency.isin(selected_currency)]
-fig = px.line(filtered_df, x="date", y="value", color='currency')
-
+from tools import df, transco_dic, transco
+import dash_table
 
 form = dbc.Row(
     [
@@ -49,7 +20,7 @@ form = dbc.Row(
                         options=[
                             {"label": transco_dic[m], "value": m} for m in df.currency.unique()
                         ],
-                        value='CAD',
+                        value=["CAD", "EUR", "GBP"],
                         id='currency-control',
                         multi=True
                     ),
@@ -78,26 +49,53 @@ form = dbc.Row(
     ],
 )
 
+alerte = html.Div([dbc.Alert("Please select at least one currency", color="primary")],
+                  style={'display': 'none'}, id="output")
+
+
+carte_1 = dbc.Card(
+    [
+        dbc.CardBody(
+            [
+                html.H4("Value for 1 USD dollar", className="card-title"),
+                html.Div(form),
+                html.Div(dcc.Graph(id='graph-with-control',
+                                   config={
+                                       'displayModeBar': False
+                                   })),
+                alerte,
+                html.Span(
+                    f"Dernière données au {df.date.max().date()}. ",
+                    className="card-text",
+                ),
+                html.A(href="https://exchangeratesapi.io/",
+                       target="_blank", children=html.Span("Voir la source"))
+                # dbc.Button("Go somewhere", color="primary"),
+            ]
+        ),
+    ], className="shadow", style={"border": "none"}
+)
+
 
 layout = dbc.Container([
     # html.H3("Currency App"),
     html.H1("Currency App", className="bd-title",
             style={"margin-bottom": "30px"}),
-    # html.Hr(),
-    form,
-    dbc.Row(
-        [
-            dbc.Col(dcc.Graph(id='graph-with-control',
-                              config={
-                                  'displayModeBar': False
-                              })),
-        ],
-        align="center",
-    ),
-    html.Div(
-        dbc.Alert(f"Dernière données au {df.date.max().date()}", color="secondary")),
-    html.Div([dbc.Alert("Please select at least one currency", color="primary")],
-             style={'display': 'none'}, id="output"),
+    carte_1,
+
+    # dbc.Row(
+    #     [dbc.Col(
+    #         html.Div(dash_table.DataTable(
+    #             id='table',
+    #             columns=[{"name": i, "id": i} for i in transco.columns],
+    #             data=transco.to_dict('records'),
+    #         )),
+    #         width=3,
+    #     )],
+    #     justify="start"
+    # ),
+
+
 ],
 
     fluid=True
@@ -118,7 +116,7 @@ def update_figure(selected_currency, year_range):
     filtered_df = df[(df.currency.isin(selected_currency))
                      & (df.year >= year_range[0]) & (df.year <= year_range[1])]
     fig = px.line(filtered_df, x="date", y="value", color='currency',
-                  template="simple_white",
+                  template="simple_white"
                   )
     fig.update_layout(transition_duration=500)
     return fig, {'display': display_alert}
