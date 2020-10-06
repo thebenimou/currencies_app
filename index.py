@@ -6,6 +6,8 @@ from dash.dependencies import Input, Output
 from app import app
 from apps import app1, currency_app
 
+server = app.server
+
 
 # menu
 SIDEBAR_STYLE = {
