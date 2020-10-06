@@ -80,8 +80,10 @@ form = dbc.Row(
 
 
 layout = dbc.Container([
-    html.H1("Currency App"),
-    html.Hr(),
+    # html.H3("Currency App"),
+    html.H1("Currency App", className="bd-title",
+            style={"margin-bottom": "30px"}),
+    # html.Hr(),
     form,
     dbc.Row(
         [
@@ -92,14 +94,17 @@ layout = dbc.Container([
         ],
         align="center",
     ),
+    html.Div(
+        dbc.Alert(f"Dernière données au {df.date.max().date()}", color="secondary")),
     html.Div([dbc.Alert("Please select at least one currency", color="primary")],
              style={'display': 'none'}, id="output"),
 ],
+
     fluid=True
 )
 
 
-@app.callback(
+@ app.callback(
     [Output('graph-with-control', 'figure'),
      Output(component_id='output', component_property='style')],
     [Input('currency-control', 'value'), Input('year-control', 'value')])

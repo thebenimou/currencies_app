@@ -4,7 +4,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import app1, app2
+from apps import app1, currency_app
 
 
 # menu
@@ -19,15 +19,17 @@ SIDEBAR_STYLE = {
 }
 sidebar = html.Div(
     [
-        html.H2("Sidebar", className="display-4"),
-        html.Hr(),
+        # html.H2("Dash", className="display-3"),
+        # html.Hr(),
         html.P(
-            "A simple sidebar layout with navigation links", className="lead"
+            "Dash Apps", className="lead"
         ),
         dbc.Nav(
             [
-                dbc.NavLink("Page 1", href="/apps/app1", id="page-1-link"),
-                dbc.NavLink("Page 2", href="/apps/app2", id="page-2-link"),
+                dbc.NavLink("💸  Currency App", href="/apps/currency_app",
+                            id="currency_app-link"),
+                dbc.NavLink("Page 2", href="/apps/app1", id="page-1-link"),
+
             ],
             vertical=True,
             pills=True,
@@ -56,10 +58,10 @@ app.layout = html.Div([
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/apps/app1':
+    if pathname == '/apps/currency_app' or pathname == '/':
+        return currency_app.layout
+    elif pathname == '/apps/app1':
         return app1.layout
-    elif pathname == '/apps/app2':
-        return app2.layout
     else:
         return f'inconnu : {pathname}'
 
