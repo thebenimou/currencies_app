@@ -8,6 +8,19 @@ from apps import app1, currency_app
 
 server = app.server
 
+pages = {
+    "/apps/currency_app": {
+        "title": "💸  Currencies",
+        "id": "currency_app-link",
+        "app": currency_app.layout
+    },
+    "/apps/app1": {
+        "title": "🏪 Superstore",
+        "id": "page-1-link",
+        "app": app1.layout
+    }
+}
+
 
 # menu
 SIDEBAR_STYLE = {
@@ -27,12 +40,8 @@ sidebar = html.Div(
             "Dash Apps", className="lead"
         ),
         dbc.Nav(
-            [
-                dbc.NavLink("💸  Currency App", href="/apps/currency_app",
-                            id="currency_app-link"),
-                dbc.NavLink("Page 2", href="/apps/app1", id="page-1-link"),
-
-            ],
+            [dbc.NavLink(m[1]['title'], href=m[0], id=m[1]['id'])
+             for m in pages.items()],
             vertical=True,
             pills=True,
         ),
@@ -60,12 +69,22 @@ app.layout = html.Div([
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/apps/currency_app' or pathname == '/':
-        return currency_app.layout
-    elif pathname == '/apps/app1':
-        return app1.layout
+    if pathname in pages.keys() or pathname == '/':
+        return pages[pathname]["app"]
     else:
-        return f'inconnu : {pathname}'
+        # faire un template joli de page
+        return f"Cette page n'existe pas : {pathname}"
+
+
+@app.callback(
+    [Output(f"{m[1]['id']}", "active") for m in pages.items()],
+    [Input("url", "pathname")],
+)
+def toggle_active_links(pathname):
+    if pathname == "/":
+        # ici on avoir len(pages.items()) elements, à automatiser
+        return True, False
+    return [pathname == f"{m[0]}" for m in pages.items()]
 
 
 if __name__ == '__main__':

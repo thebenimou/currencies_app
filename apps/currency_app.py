@@ -78,24 +78,7 @@ carte_1 = dbc.Card(
 
 
 layout = dbc.Container([
-    # html.H3("Currency App"),
-    html.H1("Currency App", className="bd-title",
-            style={"margin-bottom": "30px"}),
     carte_1,
-
-    # dbc.Row(
-    #     [dbc.Col(
-    #         html.Div(dash_table.DataTable(
-    #             id='table',
-    #             columns=[{"name": i, "id": i} for i in transco.columns],
-    #             data=transco.to_dict('records'),
-    #         )),
-    #         width=3,
-    #     )],
-    #     justify="start"
-    # ),
-
-
 ],
 
     fluid=True

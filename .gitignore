@@ -6,3 +6,4 @@ apps/__pycache__/
 apps/__pycache__/__init__.cpython-37.pyc
 apps/__pycache__/app1.cpython-37.pyc
 *.pyc
+*.pyc
