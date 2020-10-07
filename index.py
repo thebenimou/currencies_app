@@ -4,7 +4,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import app1, currency_app
+from apps import currency_app, app1, infos
 
 server = app.server
 
@@ -18,11 +18,16 @@ pages = {
         "title": "🏪 Superstore",
         "id": "page-1-link",
         "app": app1.layout
+    },
+    "/apps/infos": {
+        "title": "ℹ Infos",
+        "id": "page-2-link",
+        "app": infos.layout
     }
 }
 
 
-# menu
+# menu - faire un fichier à part
 SIDEBAR_STYLE = {
     "position": "fixed",
     "top": 0,
@@ -83,7 +88,8 @@ def display_page(pathname):
 def toggle_active_links(pathname):
     if pathname == "/":
         # ici on avoir len(pages.items()) elements, à automatiser
-        return True, False
+        # return True, False
+        return [True] + [False for m in range(len(pages.keys())-1)]
     return [pathname == f"{m[0]}" for m in pages.items()]
 
 
