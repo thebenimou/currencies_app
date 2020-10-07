@@ -4,6 +4,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 from app import app
+from .components import ModernCard
 
 
 import pandas as pd
@@ -24,7 +25,7 @@ color_map = {
     "South": "#0A2463"}
 
 region = dbc.FormGroup([
-    dbc.Label("Région"),
+    dbc.Label("Région", className="font-weight-bold"),
     dcc.Dropdown(
         options=[{"label": "ALL", "value": "ALL"}] + [{"label": m,
                                                        "value": m} for m in superstore2.Region.unique()],
@@ -36,7 +37,7 @@ region = dbc.FormGroup([
 
 
 product_category = dbc.FormGroup([
-    dbc.Label("Catégorie"),
+    dbc.Label("Catégorie", className="font-weight-bold"),
     dcc.Dropdown(
         options=[{"label": "ALL", "value": "ALL"}] + [{"label": m,
                                                        "value": m} for m in superstore2["Product Category"].unique()],
@@ -47,45 +48,46 @@ product_category = dbc.FormGroup([
 ])
 
 
-view = dbc.FormGroup([
-    dbc.Label("View"),
-    dcc.RadioItems(
-        options=[
-            {'label': 'Region', 'value': 'sales'},
-            {'label': 'Categorie', 'value': 'product_categories'},
-        ],
-        value='sales',
-        id="view-control",
+customer_segment = dbc.FormGroup([
+    dbc.Label("Customer Segment", className="font-weight-bold"),
+    dcc.Checklist(
+        options=[{"label": m, "value": m}
+                 for m in superstore["Customer Segment"].unique()],
+        value=superstore["Customer Segment"].unique(),
+        id="customer-segment-control",
         labelStyle={'display': 'block'}
-    )])
+
+    )
+])
+
 
 form = html.Div(
     [region,
      product_category,
-     view]
+     customer_segment]
 )
 
 
 ligne_indicateurs = dbc.Row(
-    [dbc.Col(dbc.Card(
+    [dbc.Col(ModernCard(
         dbc.CardBody([
             html.H6("West"),
             html.H1(id="west-card"),
         ], style={"color": color_map['West']})
     )),
-        dbc.Col(dbc.Card(
+        dbc.Col(ModernCard(
             dbc.CardBody([
                 html.H6("South"),
                 html.H1(id="south-card"),
             ], style={"color": color_map['South']}
             )
-        )), dbc.Col(dbc.Card(
+        )), dbc.Col(ModernCard(
             dbc.CardBody([
                     html.H6("Central"),
                     html.H1(id="central-card"),
                     ],
                 style={"color": color_map['Central']})
-        )), dbc.Col(dbc.Card(
+        )), dbc.Col(ModernCard(
             dbc.CardBody([
                     html.H6("East"),
                     html.H1(id="east-card"),
@@ -110,10 +112,49 @@ ligne_indicateurs = dbc.Row(
 #     ]
 # )
 
-chart = dcc.Graph(id="sales_chart",
-                  config={
-                      'displayModeBar': False
-                  })
+
+# graphique de gauche
+sales_chart_left = dcc.Graph(id="sales_chart_left_big",
+                             config={
+                                 'displayModeBar': False
+                             })
+
+sales_chart_col = dbc.Col(
+    ModernCard(
+        dbc.CardBody([
+            html.Div(sales_chart_left),
+        ])
+    ),
+    width=12
+)
+
+# graphique top par category
+top_products = superstore2.groupby("Product Sub-Category")['Sales'].agg(
+    sum).reset_index().sort_values("Sales", ascending=False).head(5)
+fig = px.bar(top_products, y="Product Sub-Category",
+             x="Sales", orientation='h')
+# fig.update_yaxes(autorange="reversed")
+fig.update_layout(showlegend=False)
+
+sales_chart_right = dcc.Graph(id="sales_chart_rigth",
+                              figure=fig,
+                              config={
+                                 'displayModeBar': False
+                              })
+
+top_n_col = dbc.Col(
+    ModernCard(
+        dbc.CardBody([
+            html.Div(sales_chart_right),
+        ])
+    ),
+    width=6
+)
+
+# graphique carte
+
+
+# layout
 
 layout = html.Div(
     [
@@ -123,15 +164,10 @@ layout = html.Div(
                 dbc.Col(
                     [
                         ligne_indicateurs,
-                        dbc.Row(dbc.Col(
-                            dbc.Card(
-                                dbc.CardBody([
-                                    # html.H6("South"),
-                                    html.Div(chart),
-                                ]), style={"margin-top": "30px"}
-                            ),
-                            width=12
-                        ))
+                        dbc.Row([sales_chart_col], style={
+                                "margin-top": "30px"}),
+                        dbc.Row([top_n_col], style={
+                                "margin-top": "30px"})
                     ]
                 ),
             ]
@@ -142,7 +178,7 @@ layout = html.Div(
 
 
 @ app.callback(
-    [Output('sales_chart', 'figure'),
+    [Output('sales_chart_left_big', 'figure'),
      Output('west-card', 'children'),
      Output('south-card', 'children'),
      Output('central-card', 'children'),
@@ -150,34 +186,30 @@ layout = html.Div(
 
      ],
     [Input('region-control', 'value'),
-     Input('view-control', 'value'),
      Input('category-control', 'value'),
-
+     Input('customer-segment-control', 'value'),
      ]
 )
-def update_figure(selected_region, view, category):
+def update_figure(selected_region,  category, customer_segment):
+    filtered = superstore2
     # filtre région
     if selected_region == "ALL" or selected_region is None:
-        filtered = superstore2
+        pass
     else:
-        filtered = superstore2[superstore2.Region == selected_region]
+        filtered = filtered[filtered.Region == selected_region]
     # filtre catégorie
     if category in superstore2["Product Category"].unique():
-        filtered = superstore2[superstore2["Product Category"] == category]
-    # vue 1
-    if view == "sales":
-        filtered2 = filtered.groupby(['Order Date', 'Region'])[
-            'Sales'].agg(sum).reset_index()
-        fig = px.line(filtered2, x="Order Date", y="Sales", color="Region",
-                      template="simple_white",
-                      color_discrete_map=color_map)
-    if view == "product_categories":
-        filtered2 = filtered.groupby(['Order Date', 'Product Category'])[
-            'Sales'].agg(sum).reset_index()
-        fig = px.line(filtered2, x="Order Date",
-                      template="simple_white",
-                      y="Sales", color="Product Category")
-    fig.update_layout(transition_duration=500)
+        filtered = filtered[filtered["Product Category"] == category]
+    # filtre customer_segment
+    filtered = filtered[filtered["Customer Segment"].isin(customer_segment)]
+    # graphique 1
+    base_graph = filtered.groupby(['Order Date', 'Region'])[
+        'Sales'].agg(sum).reset_index()
+    fig = px.line(base_graph, x="Order Date", y="Sales", color="Region",
+                  template="simple_white",
+                  color_discrete_map=color_map
+                  )
+    # chiffres du haut
     West = human_format(
         filtered[filtered.Region == "West"]['Sales'].sum())
     South = human_format(
@@ -186,5 +218,4 @@ def update_figure(selected_region, view, category):
         filtered[filtered.Region == "Central"]['Sales'].sum())
     East = human_format(
         filtered[filtered.Region == "East"]['Sales'].sum())
-
     return fig, West, South, Central, East

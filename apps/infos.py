@@ -5,5 +5,13 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 from app import app
 
+from .components import ModernCard
 
-layout = html.Div("infos")
+
+layout = html.Div(
+    [
+        ModernCard(
+            children=[dbc.CardBody("This is some text within a card body !")],
+        ),
+    ]
+)
