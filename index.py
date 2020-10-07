@@ -74,8 +74,10 @@ app.layout = html.Div([
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname in pages.keys() or pathname == '/':
+    if pathname in pages.keys():
         return pages[pathname]["app"]
+    if pathname == "/":
+        return pages["/apps/currency_app"]['app']
     else:
         # faire un template joli de page
         return f"Cette page n'existe pas : {pathname}"
