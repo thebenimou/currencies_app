@@ -52,7 +52,6 @@ slider1 = dcc.RangeSlider(
     max=year_max,
     value=[2016, 2020],
     id="selected_years",
-    style={"margin-top": "20px"}
 )
 
 # graphique
