@@ -4,7 +4,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import currency_app, app1, infos
+from apps import currency_app, app1, infos, nasdaq
 
 server = app.server
 
@@ -18,6 +18,11 @@ pages = {
         "title": "🏪 Superstore",
         "id": "page-1-link",
         "app": app1.layout
+    },
+    "/apps/nasdaq": {
+        "title": "📈 Nasdaq",
+        "id": "nasdaq-link",
+        "app": nasdaq.layout
     },
     "/apps/infos": {
         "title": "ℹ Infos",
